@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6f6b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231f6f6b'/><text x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='sans-serif'>ECC</text></svg>">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<script src="questions.js"></script>
+<title>体外循環クイズ500</title>
+<style>
+/* ============================================================
+   配色トークン（ライト固定）
+   ============================================================ */
+:root{
+  --bg:#f7f7f5; --surface:#ffffff; --line:#e2e2dd;
+  --text:#1d1d1b; --muted:#6b6b66;
+  --accent:#1f6f6b; --accent-weak:#e6f1f0;
+  --ok:#1d7a4c; --ok-weak:#e5f3ec;
+  --ng:#b3261e; --ng-weak:#fbeae9;
+}
+
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  font-size:15px; line-height:1.7; margin:0;
+}
+.wrap{max-width:760px; margin:0 auto; padding:16px; padding-block:20px 64px}
+h1{font-size:19px; margin:0 0 2px}
+h2{font-size:15px; margin:28px 0 10px; letter-spacing:.02em}
+.sub{color:var(--muted); font-size:12.5px; margin:0}
+header.top{margin-bottom:8px}
+
+/* カード共通 */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px}
+.card + .card{margin-top:10px}
+
+/* ボタン */
+button{font:inherit; color:inherit; cursor:pointer}
+.btn{
+  background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:11px 14px; text-align:left; width:100%;
+}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent); color:#fff; border-color:var(--accent); text-align:center; font-weight:600}
+.btn.ghost{background:transparent}
+.btn.sm{width:auto; padding:7px 12px; font-size:13px; border-radius:8px}
+.row{display:flex; gap:8px; flex-wrap:wrap}
+
+/* 章リスト */
+.chap{display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 12px; margin-bottom:8px}
+.chap:hover{border-color:var(--accent)}
+.chap .no{flex:0 0 26px; height:26px; border-radius:7px; background:var(--accent-weak); color:var(--accent);
+  display:grid; place-items:center; font-size:12px; font-weight:700}
+.chap .body{flex:1; min-width:0}
+.chap .name{display:block; font-size:13.5px; font-weight:600}
+.chap .meta{display:block; font-size:11.5px; color:var(--muted); margin-top:2px}
+.bar{height:5px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:6px}
+.bar > i{display:block; height:100%; background:var(--accent)}
+
+/* 出題画面 */
+.qmeta{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px}
+.qtext{font-size:16px; font-weight:600; line-height:1.65; margin:6px 0 14px}
+.choice{display:flex; gap:10px; align-items:flex-start; margin-bottom:8px}
+.choice .mark{flex:0 0 24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--line);
+  display:grid; place-items:center; font-size:12px; font-weight:700}
+.choice.correct{background:var(--ok-weak); border-color:var(--ok)}
+.choice.correct .mark{background:var(--ok); color:#fff; border-color:var(--ok)}
+.choice.wrong{background:var(--ng-weak); border-color:var(--ng)}
+.choice.wrong .mark{background:var(--ng); color:#fff; border-color:var(--ng)}
+.choice[disabled]{cursor:default}
+.exp{border-left:3px solid var(--accent); background:var(--accent-weak); border-radius:0 8px 8px 0;
+  padding:10px 12px; font-size:13.5px; margin-top:12px}
+.exp .lead{font-weight:700; margin-bottom:2px}
+.progress{height:4px; background:var(--line); border-radius:3px; overflow:hidden; margin-bottom:14px}
+.progress > i{display:block; height:100%; background:var(--accent); transition:width .2s}
+
+/* 結果画面の誤答リスト */
+.miss{border-top:1px solid var(--line); padding:12px 0}
+.miss .q{font-weight:600; font-size:14px}
+.miss .a{font-size:13px; margin-top:4px}
+.tag{display:inline-block; font-size:11px; padding:1px 7px; border-radius:99px; border:1px solid var(--line); color:var(--muted)}
+.hidden{display:none !important}
+select,input[type=number]{font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--line);
+  background:var(--surface); color:var(--text)}
+.note{font-size:12px; color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>体外循環技術認定士 500問</h1>
+      <p class="sub">分野別練習・模擬試験（全10分野 500問）</p>
+    </div>
+  </header>
+
+  <!-- ===== ホーム画面 ===== -->
+  <section id="home">
+
+    <h2>分野別練習<span class="note">（1問ごとに解説を表示）</span></h2>
+    <div id="chapList"></div>
+
+    <h2>ランダム / 模擬試験<span class="note">（最後にまとめて採点・解説）</span></h2>
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <label>出題数
+          <select id="examCount">
+            <option value="20">20問</option>
+            <option value="50" selected>50問</option>
+            <option value="100">100問</option>
+            <option value="500">500問（全問）</option>
+          </select>
+        </label>
+        <label>出題範囲
+          <select id="examScope">
+            <option value="all">全分野</option>
+          </select>
+        </label>
+        <button class="btn primary sm" id="startExam">開始</button>
+      </div>
+      <p class="note" style="margin:10px 0 0">出題順はランダム。途中で中断すると記録は残りません。</p>
+    </div>
+
+
+    <p class="note" style="margin-top:24px">
+      ※ 成績はその回の出題ぶんだけを集計し、保存は行いません（画面を閉じると消えます）。<br>
+      ※ 本アプリは学習用の非公式教材です。数値・設定値は一般的な教科書的知識に基づくもので、実際の臨床は各施設のプロトコル・最新ガイドラインに従ってください。
+    </p>
+  </section>
+
+  <!-- ===== 出題画面 ===== -->
+  <section id="quiz" class="hidden">
+    <div class="progress"><i id="prog"></i></div>
+    <div class="qmeta">
+      <span id="qLabel"></span>
+      <span id="qScore"></span>
+    </div>
+    <div class="card">
+      <div class="qtext" id="qText"></div>
+      <div id="choices"></div>
+      <div id="expBox" class="exp hidden"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn sm ghost" id="quitBtn">中断してホームへ</button>
+      <button class="btn primary sm hidden" id="nextBtn" style="margin-left:auto">次の問題 →</button>
+    </div>
+  </section>
+
+  <!-- ===== 結果画面 ===== -->
+  <section id="result" class="hidden">
+    <div class="card" style="text-align:center">
+      <div style="font-size:13px;color:var(--muted)" id="rsMode"></div>
+      <div style="font-size:34px;font-weight:700;line-height:1.2" id="rsScore"></div>
+      <div style="font-size:13px;color:var(--muted)" id="rsDetail"></div>
+    </div>
+    <h2>分野別の内訳（今回）</h2>
+    <div id="rsChap"></div>
+    <h2>誤答の確認</h2>
+    <div class="card" id="rsMiss"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn primary sm" id="homeBtn">ホームへ戻る</button>
+      <button class="btn sm ghost" id="againBtn">同じ条件でもう一度</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =========================================================================
+   体外循環技術認定士 500問 学習アプリ
+   - データは QUIZ_DATA（questions.js もしくはこのファイル内に埋め込み）
+   - 成績は1回ごとの出題セッション内でのみ集計し、保存や外部送信は一切行わない
+   ========================================================================= */
+
+const DATA = window.QUIZ_DATA;              // {chapters:[...], questions:[{id,ch,n,q,c[4],a,e}]}
+const CH   = DATA.chapters;                 // 章タイトル10件
+const QS   = DATA.questions;                // 全500問
+/* ---------- 画面切替 ------------------------------------------------------ */
+const $ = id => document.getElementById(id);
+function show(name){
+  ["home","quiz","result"].forEach(n => $(n).classList.toggle("hidden", n!==name));
+  window.scrollTo(0,0);
+}
+
+/* ---------- ホーム画面の描画 ---------------------------------------------- */
+function renderHome(){
+  // 章ごとのカード（正答率バー付き）
+  $("chapList").innerHTML = "";
+  CH.forEach((name,i)=>{
+    const b = document.createElement("button");
+    b.className = "chap";
+    b.innerHTML = `
+      <span class="no">${i+1}</span>
+      <span class="body">
+        <span class="name">${name}</span>
+        <span class="meta">全50問</span>
+      </span>`;
+    b.onclick = ()=> startSession({mode:"practice", ch:i});
+    $("chapList").appendChild(b);
+  });
+
+  // 模試の「出題範囲」セレクトを章で埋める（初回のみ）
+  const sc = $("examScope");
+  if(sc.options.length===1){
+    CH.forEach((name,i)=>{
+      const o=document.createElement("option"); o.value=i; o.textContent=`${i+1}. ${name}`;
+      sc.appendChild(o);
+    });
+  }
+}
+
+/* ---------- セッション（出題）管理 ---------------------------------------- */
+let S = null;   // 現在のセッション状態
+
+function shuffle(arr){                       // Fisher–Yates シャッフル
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* opt = {mode:"practice"|"exam", ch:章番号|null, count:出題数} */
+function startSession(opt){
+  let pool;
+  if(opt.mode === "practice"){
+    pool = QS.filter(q=>q.ch===opt.ch);      // 章内は問題番号順（テキストと同じ並び）
+  }else{
+    pool = (opt.ch===null||opt.ch===undefined) ? QS : QS.filter(q=>q.ch===opt.ch);
+    pool = shuffle(pool).slice(0, Math.min(opt.count||50, pool.length));
+  }
+  S = {opt, list:pool, i:0, answers:[], correct:0};
+  show("quiz");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = S.list[S.i];
+  const exam = S.opt.mode === "exam";        // 模試モードは解説を最後にまとめて表示
+
+  $("prog").style.width = (S.i / S.list.length * 100) + "%";
+  $("qLabel").textContent = exam
+      ? `第${q.ch+1}章 / 全${S.list.length}問中 ${S.i+1}問目`
+      : `第${q.ch+1}章 問${q.n}（${S.i+1}/${S.list.length}）`;
+  $("qScore").textContent = exam ? "" : `正解 ${S.correct} / ${S.i}`;
+  $("qText").textContent  = q.q;
+  $("expBox").classList.add("hidden");
+  $("nextBtn").classList.add("hidden");
+
+  // 選択肢ボタンを生成
+  const box = $("choices"); box.innerHTML = "";
+  ["ア","イ","ウ","エ"].forEach((mk,idx)=>{
+    const b = document.createElement("button");
+    b.className = "btn choice";
+    b.innerHTML = `<span class="mark">${mk}</span><span>${q.c[idx]}</span>`;
+    b.onclick = ()=> answer(idx);
+    box.appendChild(b);
+  });
+}
+
+function answer(pick){
+  const q  = S.list[S.i];
+  const ok = pick === q.a;
+  if(ok) S.correct++;
+  S.answers.push({id:q.id, pick, ok});
+
+  const btns = $("choices").children;
+  [...btns].forEach((b,idx)=>{
+    b.disabled = true;
+    if(S.opt.mode === "practice"){            // 練習モード＝即時に正誤を色分け
+      if(idx === q.a)         b.classList.add("correct");
+      else if(idx === pick)   b.classList.add("wrong");
+    }else if(idx === pick){                   // 模試モードは選んだ肢だけ強調
+      b.style.borderColor = "var(--accent)";
+    }
+  });
+
+  if(S.opt.mode === "practice"){              // 練習モードは解説をその場で表示
+    $("expBox").innerHTML = `<div class="lead">${ok?"正解":"不正解"} — 正解は「${["ア","イ","ウ","エ"][q.a]}」</div>${q.e}`;
+    $("expBox").classList.remove("hidden");
+    $("nextBtn").classList.remove("hidden");
+    $("qScore").textContent = `正解 ${S.correct} / ${S.i+1}`;
+  }else{
+    setTimeout(next, 150);                    // 模試モードは即次へ
+  }
+}
+
+function next(){
+  S.i++;
+  if(S.i >= S.list.length) finish();
+  else renderQuestion();
+}
+
+/* ---------- 結果画面 ------------------------------------------------------ */
+function finish(){
+  const n = S.list.length, c = S.correct;
+  $("rsMode").textContent = S.opt.mode==="practice"
+      ? `第${S.opt.ch+1}章 ${CH[S.opt.ch]}` : `ランダム / 模擬試験（${n}問）`;
+  $("rsScore").textContent  = Math.round(c/n*100) + "%";
+  $("rsDetail").textContent = `${n}問中 ${c}問正解`;
+
+  // 今回のセッションを章別に集計
+  const per = {};
+  S.answers.forEach(a=>{
+    const q = QS.find(x=>x.id===a.id);
+    (per[q.ch] = per[q.ch] || {t:0,c:0}).t++;
+    if(a.ok) per[q.ch].c++;
+  });
+  $("rsChap").innerHTML = "";
+  Object.keys(per).sort((a,b)=>a-b).forEach(ch=>{
+    const s = per[ch], rate = Math.round(s.c/s.t*100);
+    const d = document.createElement("div");
+    d.className = "chap"; d.style.cursor = "default";
+    d.innerHTML = `<span class="no">${+ch+1}</span>
+      <span class="body"><span class="name">${CH[ch]}</span>
+      <span class="meta">${s.c} / ${s.t}問正解（${rate}%）</span>
+      <span class="bar"><i style="width:${rate}%"></i></span></span>`;
+    $("rsChap").appendChild(d);
+  });
+
+  // 誤答の一覧（模試モードではここが解説の表示場所になる）
+  const miss = S.answers.filter(a=>!a.ok);
+  $("rsMiss").innerHTML = miss.length ? "" : `<div class="note">誤答はありません。</div>`;
+  miss.forEach(a=>{
+    const q = QS.find(x=>x.id===a.id);
+    const L = ["ア","イ","ウ","エ"];
+    const d = document.createElement("div");
+    d.className = "miss";
+    d.innerHTML = `
+      <div class="q"><span class="tag">第${q.ch+1}章 問${q.n}</span> ${q.q}</div>
+      <div class="a">あなたの解答：${L[a.pick]}．${q.c[a.pick]}<br>
+        正解：<b>${L[q.a]}．${q.c[q.a]}</b></div>
+      <div class="exp" style="margin-top:8px">${q.e}</div>`;
+    $("rsMiss").appendChild(d);
+  });
+
+  show("result");
+}
+
+/* ---------- イベント配線 -------------------------------------------------- */
+$("nextBtn").onclick = next;
+$("quitBtn").onclick = ()=>{ show("home"); };
+$("homeBtn").onclick = ()=> show("home");
+$("againBtn").onclick = ()=> startSession(S.opt);
+$("startExam").onclick = ()=>{
+  const sc = $("examScope").value;
+  startSession({mode:"exam", ch: sc==="all" ? null : +sc, count: +$("examCount").value});
+};
+
+/* 起動 */
+renderHome();
+show("home");
+</script>
+
+<script>
+/* Service Worker 登録（GitHub Pages などの https 配信時のみ有効。
+   file:// で直接開いた場合は登録されないが、アプリ自体は動作する） */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "体外循環技術認定士 500問",
+  "short_name": "ECC 500問",
+  "description": "体外循環技術認定士の対策問題集アプリ（分野別練習・模擬試験・成績記録）",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f7f5",
+  "theme_color": "#1f6f6b",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
