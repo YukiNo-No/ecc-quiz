@@ -1,7 +1,7 @@
 /* Service Worker
    アプリ本体をキャッシュして、オフラインでも起動できるようにする。
    ファイルを更新したら CACHE の版数（v1 → v2 …）を上げること。 */
-const CACHE = "ecc-quiz-v1";
+const CACHE = "ecc-quiz-v3";
 const ASSETS = ["./", "./index.html", "./questions.js", "./manifest.webmanifest"];
 
 // インストール時に必要なファイルを先読みキャッシュ

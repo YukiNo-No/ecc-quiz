@@ -61,6 +61,17 @@ button{font:inherit; color:inherit; cursor:pointer}
 .chap .body{flex:1; min-width:0}
 .chap .name{display:block; font-size:13.5px; font-weight:600}
 .chap .meta{display:block; font-size:11.5px; color:var(--muted); margin-top:2px}
+.chap .arrow{flex:0 0 auto; color:var(--muted); font-size:12px}
+/* 問題番号のグリッド（章カードを開くと出る） */
+.numgrid{display:grid; grid-template-columns:repeat(10,1fr); gap:5px;
+  background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:12px; margin:-4px 0 10px}
+.numgrid button{background:var(--bg); border:1px solid var(--line); border-radius:7px;
+  padding:7px 0; font-size:12px; text-align:center}
+.numgrid button:hover{border-color:var(--accent); color:var(--accent)}
+.numgrid .all{grid-column:1 / -1; background:var(--accent-weak); border-color:var(--accent);
+  color:var(--accent); font-weight:600; padding:9px 0; margin-bottom:2px}
+@media(max-width:420px){ .numgrid{grid-template-columns:repeat(5,1fr)} }
 .bar{height:5px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:6px}
 .bar > i{display:block; height:100%; background:var(--accent)}
 
@@ -103,7 +114,7 @@ select,input[type=number]{font:inherit; padding:8px 10px; border-radius:8px; bor
   <!-- ===== ホーム画面 ===== -->
   <section id="home">
 
-    <h2>分野別練習<span class="note">（1問ごとに解説を表示）</span></h2>
+    <h2>分野別練習<span class="note">（章をタップすると問題番号を選べます）</span></h2>
     <div id="chapList"></div>
 
     <h2>ランダム / 模擬試験<span class="note">（最後にまとめて採点・解説）</span></h2>
@@ -189,7 +200,7 @@ function show(name){
 
 /* ---------- ホーム画面の描画 ---------------------------------------------- */
 function renderHome(){
-  // 章ごとのカード（正答率バー付き）
+  // 章ごとのカード。タップすると問題番号の一覧（1〜50）が開く
   $("chapList").innerHTML = "";
   CH.forEach((name,i)=>{
     const b = document.createElement("button");
@@ -199,9 +210,35 @@ function renderHome(){
       <span class="body">
         <span class="name">${name}</span>
         <span class="meta">全50問</span>
-      </span>`;
-    b.onclick = ()=> startSession({mode:"practice", ch:i});
+      </span>
+      <span class="arrow">▾</span>`;
+
+    // 番号グリッド（最初は非表示）
+    const grid = document.createElement("div");
+    grid.className = "numgrid hidden";
+    const all = document.createElement("button");
+    all.className = "all";
+    all.textContent = "問1から通して解く";
+    all.onclick = ()=> startSession({mode:"practice", ch:i, start:0});
+    grid.appendChild(all);
+    for(let n=1; n<=50; n++){
+      const nb = document.createElement("button");
+      nb.textContent = n;
+      nb.title = `問${n}から開く`;
+      nb.onclick = ()=> startSession({mode:"practice", ch:i, start:n-1});
+      grid.appendChild(nb);
+    }
+
+    b.onclick = ()=>{
+      // 他の章のグリッドは閉じてから、この章を開閉する
+      const open = grid.classList.contains("hidden");
+      document.querySelectorAll(".numgrid").forEach(g=> g.classList.add("hidden"));
+      document.querySelectorAll(".chap .arrow").forEach(a=> a.textContent="▾");
+      if(open){ grid.classList.remove("hidden"); b.querySelector(".arrow").textContent="▴"; }
+    };
+
     $("chapList").appendChild(b);
+    $("chapList").appendChild(grid);
   });
 
   // 模試の「出題範囲」セレクトを章で埋める（初回のみ）
@@ -227,7 +264,8 @@ function shuffle(arr){                       // Fisher–Yates シャッフル
 function startSession(opt){
   let pool;
   if(opt.mode === "practice"){
-    pool = QS.filter(q=>q.ch===opt.ch);      // 章内は問題番号順（テキストと同じ並び）
+    // 章内は問題番号順。start が指定されていればその問題から開始する
+    pool = QS.filter(q=>q.ch===opt.ch).slice(opt.start || 0);
   }else{
     pool = (opt.ch===null||opt.ch===undefined) ? QS : QS.filter(q=>q.ch===opt.ch);
     pool = shuffle(pool).slice(0, Math.min(opt.count||50, pool.length));
@@ -298,7 +336,8 @@ function next(){
 function finish(){
   const n = S.list.length, c = S.correct;
   $("rsMode").textContent = S.opt.mode==="practice"
-      ? `第${S.opt.ch+1}章 ${CH[S.opt.ch]}` : `ランダム / 模擬試験（${n}問）`;
+      ? `第${S.opt.ch+1}章 ${CH[S.opt.ch]}` + (S.opt.start ? `（問${S.opt.start+1}〜）` : "")
+      : `ランダム / 模擬試験（${n}問）`;
   $("rsScore").textContent  = Math.round(c/n*100) + "%";
   $("rsDetail").textContent = `${n}問中 ${c}問正解`;
 
@@ -356,8 +395,6 @@ show("home");
 </script>
 
 <script>
-/* Service Worker 登録（GitHub Pages などの https 配信時のみ有効。
-   file:// で直接開いた場合は登録されないが、アプリ自体は動作する） */
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
