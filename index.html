@@ -97,6 +97,7 @@ button{font:inherit; color:inherit; cursor:pointer}
 .miss .q{font-weight:600; font-size:14px}
 .miss .a{font-size:13px; margin-top:4px}
 .tag{display:inline-block; font-size:11px; padding:1px 7px; border-radius:99px; border:1px solid var(--line); color:var(--muted)}
+.miss .ok{color:var(--ok); font-weight:700}
 .hidden{display:none !important}
 select,input[type=number]{font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--line);
   background:var(--surface); color:var(--text)}
@@ -172,7 +173,7 @@ select,input[type=number]{font:inherit; padding:8px 10px; border-radius:8px; bor
     </div>
     <h2>分野別の内訳（今回）</h2>
     <div id="rsChap"></div>
-    <h2>誤答の確認</h2>
+    <h2>全問の解説</h2>
     <div class="card" id="rsMiss"></div>
     <div class="row" style="margin-top:14px">
       <button class="btn primary sm" id="homeBtn">ホームへ戻る</button>
@@ -360,23 +361,31 @@ function finish(){
     $("rsChap").appendChild(d);
   });
 
-  // 誤答の一覧（模試モードではここが解説の表示場所になる）
-  const miss = S.answers.filter(a=>!a.ok);
-  $("rsMiss").innerHTML = miss.length ? "" : `<div class="note">誤答はありません。</div>`;
-  miss.forEach(a=>{
-    const q = QS.find(x=>x.id===a.id);
-    const L = ["ア","イ","ウ","エ"];
-    const d = document.createElement("div");
-    d.className = "miss";
-    d.innerHTML = `
-      <div class="q"><span class="tag">第${q.ch+1}章 問${q.n}</span> ${q.q}</div>
-      <div class="a">あなたの解答：${L[a.pick]}．${q.c[a.pick]}<br>
-        正解：<b>${L[q.a]}．${q.c[q.a]}</b></div>
-      <div class="exp" style="margin-top:8px">${q.e}</div>`;
-    $("rsMiss").appendChild(d);
-  });
+  renderList();     // 全問の解説を描画
 
   show("result");
+}
+
+/* 結果画面の解説一覧。今回出題された全問を、正誤に関わらず順番に表示する。 */
+function renderList(){
+  const L = ["ア","イ","ウ","エ"];
+  const box = $("rsMiss");
+  box.innerHTML = "";
+
+  S.answers.forEach(a=>{
+    const q = QS.find(x=>x.id===a.id);
+    const d = document.createElement("div");
+    d.className = "miss";
+    // 正解した問題は「あなたの解答」を省き、正解表示だけにする
+    const yours = a.ok
+      ? `<span class="ok">正解</span>：${L[q.a]}．${q.c[q.a]}`
+      : `あなたの解答：${L[a.pick]}．${q.c[a.pick]}<br>正解：<b>${L[q.a]}．${q.c[q.a]}</b>`;
+    d.innerHTML = `
+      <div class="q"><span class="tag">第${q.ch+1}章 問${q.n}</span> ${q.q}</div>
+      <div class="a">${yours}</div>
+      <div class="exp" style="margin-top:8px">${q.e}</div>`;
+    box.appendChild(d);
+  });
 }
 
 /* ---------- イベント配線 -------------------------------------------------- */
